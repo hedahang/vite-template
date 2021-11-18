@@ -4,12 +4,114 @@
     <div class="img">
       <component :is="currentWeek"></component>
     </div>
+    <div class="login-box">
+      <div class="login-form">
+        <avatar class="avatar" />
+        <h2
+          v-motion
+          :initial="{
+            opacity: 0,
+            y: 100
+          }"
+          :enter="{
+            opacity: 1,
+            y: 0,
+            transition: {
+              delay: 100
+            }
+          }"
+        >
+          Vite-Template
+        </h2>
+        <div
+          class="input-group user"
+          :class="{ focus: userFocus }"
+          v-motion
+          :initial="{
+            opacity: 0,
+            y: 100
+          }"
+          :enter="{
+            opacity: 1,
+            y: 0,
+            transition: {
+              delay: 200
+            }
+          }"
+        >
+          <div class="icon">
+            <el-icon><User /></el-icon>
+          </div>
+          <div>
+            <h5>用户名</h5>
+            <input
+              type="text"
+              class="input"
+              v-model="user"
+              @focus="onUserFocus"
+              @blur="onUserBlur"
+            />
+          </div>
+        </div>
+        <div
+          class="input-group pwd"
+          :class="{ focus: pwdFocus }"
+          v-motion
+          :initial="{
+            opacity: 0,
+            y: 100
+          }"
+          :enter="{
+            opacity: 1,
+            y: 0,
+            transition: {
+              delay: 300
+            }
+          }"
+        >
+          <div class="icon">
+            <el-icon><lock /></el-icon>
+          </div>
+          <div>
+            <h5>密码</h5>
+            <input
+              type="password"
+              class="input"
+              v-model="pwd"
+              @focus="onPwdFocus"
+              @blur="onPwdBlur"
+            />
+          </div>
+        </div>
+        <button
+          class="btn"
+          v-motion
+          :initial="{
+            opacity: 0,
+            y: 10
+          }"
+          :enter="{
+            opacity: 1,
+            y: 0,
+            transition: {
+              delay: 400
+            }
+          }"
+          @click="onLogin"
+        >
+          登录
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { initRouter } from "/@/router";
 import bg from "/@/assets/images/login/bg.png";
+import avatar from "/@/assets/images/login/avatar.svg";
 import illustration0 from "/@/assets/images/login/illustration0.svg";
 import illustration1 from "/@/assets/images/login/illustration1.svg";
 import illustration2 from "/@/assets/images/login/illustration2.svg";
@@ -17,6 +119,8 @@ import illustration3 from "/@/assets/images/login/illustration3.svg";
 import illustration4 from "/@/assets/images/login/illustration4.svg";
 import illustration5 from "/@/assets/images/login/illustration5.svg";
 import illustration6 from "/@/assets/images/login/illustration6.svg";
+
+const router = useRouter();
 
 const currentWeek = computed(() => {
   switch (String(new Date().getDay())) {
@@ -38,6 +142,34 @@ const currentWeek = computed(() => {
       return illustration4;
   }
 });
+
+let user = ref("admin");
+let pwd = ref("123456");
+let userFocus = ref(true);
+let pwdFocus = ref(true);
+
+const onLogin = (): void => {
+  // storageSession.setItem("info", {
+  //   username: "admin",
+  //   accessToken: "eyJhbGciOiJIUzUxMiJ9.test"
+  // });
+  initRouter("admin").then(() => {});
+  router.push("/");
+};
+
+function onUserFocus() {
+  userFocus.value = true;
+}
+function onUserBlur() {
+  if (user.value.length === 0) userFocus.value = false;
+}
+function onPwdFocus() {
+  pwdFocus.value = true;
+}
+
+function onPwdBlur() {
+  if (pwd.value.length === 0) pwdFocus.value = false;
+}
 </script>
 
 <style scoped>
