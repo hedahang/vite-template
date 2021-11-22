@@ -101,5 +101,21 @@ class EnclosureHttp {
         });
     });
   }
+
+  public post<T>(
+    url: string,
+    params?: T,
+    config?: EnclosureHttpRequestConfig
+  ): Promise<T> {
+    return this.request<T>("post", url, params, config);
+  }
+
+  public get<T>(
+    url: string,
+    params?: T,
+    config?: EnclosureHttpRequestConfig
+  ): Promise<T> {
+    return this.request<T>("get", url, params, config);
+  }
 }
 export default EnclosureHttp;

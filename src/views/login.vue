@@ -110,6 +110,7 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { initRouter } from "/@/router";
+import { storageSession } from "/@/utils/storage";
 import bg from "/@/assets/images/login/bg.png";
 import avatar from "/@/assets/images/login/avatar.svg";
 import illustration0 from "/@/assets/images/login/illustration0.svg";
@@ -149,10 +150,10 @@ let userFocus = ref(true);
 let pwdFocus = ref(true);
 
 const onLogin = (): void => {
-  // storageSession.setItem("info", {
-  //   username: "admin",
-  //   accessToken: "eyJhbGciOiJIUzUxMiJ9.test"
-  // });
+  storageSession.setItem("info", {
+    username: "admin",
+    accessToken: "eyJhbGciOiJIUzUxMiJ9.test"
+  });
   initRouter("admin").then(() => {});
   router.push("/");
 };

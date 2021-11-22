@@ -17,7 +17,7 @@ const remainingRouter = [
   //   component: Layout,
   //   meta: {
   //     icon: "HomeFilled",
-  //     title: "message.hshome",
+  //     title: "首页",
   //     showLink: false,
   //     rank: 104
   //   },

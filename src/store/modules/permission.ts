@@ -15,7 +15,22 @@ export const usePermissionStore = defineStore({
   actions: {
     asyncActionRoutes(routes) {
       if (this.wholeRoutes.length > 0) return;
-      console.log(routes);
+      this.wholeRoutes = filterTree(
+        ascending(this.constantRoutes.concat(routes))
+      );
+      const getButtonAuth = (arrRoutes: Array<string>) => {
+        if (!arrRoutes || !arrRoutes.length) return;
+        arrRoutes.forEach((v: any) => {
+          if (v.meta && v.meta.authority) {
+            this.buttonAuth.push(...v.meta.authority);
+          }
+          if (v.children) {
+            getButtonAuth(v.children);
+          }
+        });
+      };
+
+      getButtonAuth(this.wholeRoutes);
     },
     async changeSetting(routes) {
       await this.asyncActionRoutes(routes);

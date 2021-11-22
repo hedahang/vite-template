@@ -10,6 +10,14 @@ export const injectResponsiveStorage = (app: App, config: ServerConfigs) => {
       default: Storage.getData(undefined, "locale") ?? {
         locale: config.Locale ?? "zh"
       }
+    },
+    sets: {
+      type: Object,
+      default: Storage.getData(undefined, "sets") ?? {
+        grey: config.Grey ?? false,
+        weak: config.Weak ?? false,
+        hideTabs: config.HideTabs ?? false
+      }
     }
   });
 };
