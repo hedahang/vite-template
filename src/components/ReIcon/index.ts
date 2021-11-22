@@ -7,6 +7,4 @@ export const Icon = Object.assign(icon, {
   }
 });
 
-export default {
-  Icon
-};
+export default Icon;

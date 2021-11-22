@@ -1,8 +1,6 @@
 <template>
   <div :class="['app-wrapper', set.classes]" v-resize>
-    <div class="header" v-show="!hiddenSideBar && layout.includes('vertical')">
-      header
-    </div>
+    <Vertical v-show="!hiddenSideBar && layout.includes('vertical')" />
     <div :class="['main-container', hiddenSideBar ? 'main-hidden' : '']">
       <div v-if="set.fixedHeader">
         <div class="header">fixedHeader</div>
@@ -30,6 +28,8 @@ import { emitter } from "/@/utils/mitt";
 import backTop from "/@/assets/images/svg/back_top.svg";
 import { useAppStoreHook } from "/@/store/modules/app";
 import { useSettingStoreHook } from "/@/store/modules/settings";
+
+import Vertical from "./components/sidebar/index.vue";
 
 const instance = getCurrentInstance().appContext.app.config.globalProperties;
 const hiddenSideBar = ref(instance.$config?.HiddenSideBar);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getCurrentInstance } from "vue";
-import Icon from "/@/components/ReIcon/src/Icon.vue";
+import Icon from "/@/components/ReIcon";
 const props = defineProps({
   collapse: Boolean
 });

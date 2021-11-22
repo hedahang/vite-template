@@ -10,6 +10,9 @@ import { injectResponsiveStorage } from "/@/utils/storage/responsive";
 import "animate.css";
 // 导入公共样式
 import "/@/assets/styles/index.scss";
+// 导入字体图标
+import "./assets/iconfont/iconfont.js";
+import "./assets/iconfont/iconfont.css";
 
 const app = createApp(App);
 
