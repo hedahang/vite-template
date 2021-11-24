@@ -2,9 +2,16 @@ import {
   Router,
   createRouter,
   RouteComponent,
-  createWebHashHistory
+  createWebHashHistory,
+  RouteRecordNormalized
 } from "vue-router";
+import { useTimeoutFn } from "@vueuse/core";
+import { split, uniqBy } from "lodash-es";
 import { usePermissionStoreHook } from "/@/store/modules/permission";
+import { RouteConfigs } from "/@/layout/types";
+import { openLink } from "/@/utils/globalFun";
+import NProgress from "/@/utils/progress";
+import { storageSession, storageLocal } from "/@/utils/storage";
 
 // Layout组件
 import Layout from "/@/layout/index.vue";
@@ -14,7 +21,7 @@ import remainingRouter from "./modules/remaining";
 // 动态路由
 import { getAsyncRoutes } from "/@/api/routes";
 
-const modulesRoutes = import.meta.glob("/src/views/*/*/*.vue");
+const modulesRoutes = import.meta.glob("/src/views/**/*.vue");
 
 const constantRoutes: Array<RouteComponent> = [homeRouter];
 
@@ -35,6 +42,62 @@ export const filterTree = data => {
   const newTree = data.filter(v => v.meta.showLink);
   newTree.forEach(v => v.children && (v.children = filterTree(v.children)));
   return newTree;
+};
+
+// 批量删除缓存路由
+export const delAliveRoutes = (delAliveRouteList: Array<RouteConfigs>) => {
+  delAliveRouteList.forEach(route => {
+    usePermissionStoreHook().cacheOperate({
+      mode: "delete",
+      name: route?.name
+    });
+  });
+};
+
+// 处理缓存路由（添加、删除、刷新）
+export const handleAliveRoute = (
+  matched: RouteRecordNormalized[],
+  mode?: string
+) => {
+  switch (mode) {
+    case "add":
+      matched.forEach(v => {
+        usePermissionStoreHook().cacheOperate({ mode: "add", name: v.name });
+      });
+      break;
+    case "delete":
+      usePermissionStoreHook().cacheOperate({
+        mode: "delete",
+        name: matched[matched.length - 1].name
+      });
+      break;
+    default:
+      usePermissionStoreHook().cacheOperate({
+        mode: "delete",
+        name: matched[matched.length - 1].name
+      });
+      useTimeoutFn(() => {
+        matched.forEach(v => {
+          usePermissionStoreHook().cacheOperate({ mode: "add", name: v.name });
+        });
+      }, 100);
+  }
+};
+
+// 过滤后端传来的动态路由 重新生成规范路由
+export const addAsyncRoutes = (arrRoutes: Array<RouteComponent>) => {
+  if (!arrRoutes || !arrRoutes.length) return;
+  arrRoutes.forEach((v: any) => {
+    if (v.redirect) {
+      v.component = Layout;
+    } else {
+      v.component = modulesRoutes[`/src/views${v.path}/index.vue`];
+    }
+    if (v.children) {
+      addAsyncRoutes(v.children);
+    }
+  });
+  return arrRoutes;
 };
 
 // 创建路由实例
@@ -89,20 +152,83 @@ export const initRouter = name => {
   });
 };
 
-// 过滤后端传来的动态路由 重新生成规范路由
-export const addAsyncRoutes = (arrRoutes: Array<RouteComponent>) => {
-  if (!arrRoutes || !arrRoutes.length) return;
-  arrRoutes.forEach((v: any) => {
-    if (v.redirect) {
-      v.component = Layout;
-    } else {
-      v.component = modulesRoutes[`/src/views${v.path}/index.vue`];
-    }
-    if (v.children) {
-      addAsyncRoutes(v.children);
+// 重置路由
+export function resetRouter() {
+  router.getRoutes().forEach(route => {
+    const { name } = route;
+    if (name) {
+      router.hasRoute(name) && router.removeRoute(name);
     }
   });
-  return arrRoutes;
-};
+}
+// 路由白名单
+const whiteList = ["/login"];
+
+// 路由拦截器
+router.beforeEach((to, _from, next) => {
+  if (to.meta?.keepAlive) {
+    const newMatched = to.matched;
+    handleAliveRoute(newMatched, "add");
+    // 页面整体刷新和点击标签页刷新
+    if (_from.name === undefined || _from.name === "redirect") {
+      handleAliveRoute(newMatched);
+    }
+  }
+  const name = storageSession.getItem("info");
+  NProgress.start();
+  const externalLink = to?.redirectedFrom?.fullPath;
+  // @ts-ignore
+  if (!externalLink) to.meta.title ? (document.title = to.meta.title) : "";
+
+  if (name) {
+    if (_from?.name) {
+      // 如果路由包含http 则是超链接 反之是普通路由
+      if (externalLink && externalLink.includes("http")) {
+        openLink(`http${split(externalLink, "http")[1]}`);
+        NProgress.done();
+      } else {
+        next();
+      }
+    } else {
+      if (usePermissionStoreHook().wholeRoutes.length === 0) {
+        initRouter(name.username).then((router: Router) => {
+          router.push(to.path);
+          // 刷新页面更新标签栏与页面路由匹配
+          const localRoutes = storageLocal.getItem(
+            "responsive-routesInStorage"
+          );
+          const optionsRoutes = router.options?.routes;
+          const newLocalRoutes = [];
+          optionsRoutes.forEach(ors => {
+            localRoutes.forEach(lrs => {
+              if (ors.path === lrs.parentPath) {
+                newLocalRoutes.push(lrs);
+              }
+            });
+          });
+          storageLocal.setItem(
+            "responsive-routesInStorage",
+            uniqBy(newLocalRoutes, "path")
+          );
+        });
+      }
+    }
+  } else {
+    if (to.path !== "/login") {
+      if (whiteList.indexOf(to.path) !== -1) {
+        next();
+      } else {
+        next({ path: "/login" });
+      }
+    } else {
+      next();
+    }
+  }
+  next();
+});
+
+router.afterEach(() => {
+  NProgress.done();
+});
 
 export default router;

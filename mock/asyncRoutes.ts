@@ -6,6 +6,7 @@ const permissionRouter = {
   path: "/permission",
   name: "permission",
   redirect: "/permission/page",
+  component: "Layout",
   meta: {
     title: "message.permission",
     icon: "Lollipop",
@@ -16,6 +17,7 @@ const permissionRouter = {
     {
       path: "/permission/page",
       name: "permissionPage",
+      component: "permission/page",
       meta: {
         title: "message.permissionPage",
         showLink: true
@@ -24,6 +26,7 @@ const permissionRouter = {
     {
       path: "/permission/button",
       name: "permissionButton",
+      component: "permission/button",
       meta: {
         title: "message.permissionButton",
         showLink: true,
@@ -47,7 +50,20 @@ export default [
       if (query.name === "admin") {
         return {
           code: 0,
-          info: [setDifAuthority("v-admin", permissionRouter)]
+          info: [
+            setDifAuthority("v-admin", permissionRouter),
+            {
+              path: "/test",
+              component: "test",
+              name: "test",
+              meta: {
+                title: "测试",
+                icon: "Lollipop",
+                showLink: true,
+                rank: 2
+              }
+            }
+          ]
         };
       } else {
         return {

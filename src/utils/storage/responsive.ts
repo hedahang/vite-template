@@ -4,6 +4,21 @@ import Storage from "responsive-storage";
 
 export const injectResponsiveStorage = (app: App, config: ServerConfigs) => {
   app.use(Storage, {
+    // 默认显示首页tag
+    routesInStorage: {
+      type: Array,
+      default: Storage.getData(undefined, "routesInStorage") ?? [
+        {
+          path: "/home",
+          parentPath: "/",
+          meta: {
+            title: "首页",
+            icon: "el-icon-s-home",
+            showLink: true
+          }
+        }
+      ]
+    },
     // 国际化 默认中文zh
     locale: {
       type: Object,
