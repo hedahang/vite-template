@@ -3,9 +3,11 @@
     <Vertical v-show="!hiddenSideBar && layout.includes('vertical')" />
     <div :class="['main-container', hiddenSideBar ? 'main-hidden' : '']">
       <div v-if="set.fixedHeader">
-        <div class="header">fixedHeader</div>
+        <layout-header />
         <!-- 主题内容 -->
-        <router-view></router-view>
+        <div class="app-main" style="padding-top: 85px">
+          <router-view></router-view>
+        </div>
       </div>
       <el-scrollbar v-else>
         <el-backtop
@@ -18,18 +20,33 @@
         <router-view></router-view>
       </el-scrollbar>
     </div>
+    <!-- 系统设置 -->
+    <setting />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, getCurrentInstance } from "vue";
+import {
+  h,
+  ref,
+  reactive,
+  computed,
+  getCurrentInstance,
+  defineComponent,
+  unref
+} from "vue";
 import { routerArrays, setType } from "./types";
 import { emitter } from "/@/utils/mitt";
 import backTop from "/@/assets/images/svg/back_top.svg";
 import { useAppStoreHook } from "/@/store/modules/app";
 import { useSettingStoreHook } from "/@/store/modules/settings";
 
+import fullScreen from "/@/assets/images/svg/full_screen.svg";
+import exitScreen from "/@/assets/images/svg/exit_screen.svg";
 import Vertical from "./components/sidebar/index.vue";
+import navbar from "./components/navbar.vue";
+import setting from "./components/setting/index.vue";
+import Horizontal from "./components/sidebar/horizontal.vue";
 
 const instance = getCurrentInstance().appContext.app.config.globalProperties;
 const hiddenSideBar = ref(instance.$config?.HiddenSideBar);
@@ -63,7 +80,6 @@ const layout = computed(() => {
       hideTabs: instance.$config?.HideTabs ?? false
     };
   }
-  console.log("*****", instance);
   return instance.$storage?.layout.layout;
 });
 
@@ -101,6 +117,55 @@ function setTheme(layoutModel: string) {
 emitter.on("resize", config => {
   let { width } = config.detail;
   width <= 670 ? setTheme("vertical") : setTheme(useAppStoreHook().layout);
+});
+
+function onFullScreen() {
+  unref(hiddenSideBar)
+    ? (hiddenSideBar.value = false)
+    : (hiddenSideBar.value = true);
+}
+
+const layoutHeader = defineComponent({
+  render() {
+    return h(
+      "div",
+      {
+        class: { "fixed-header": set.fixedHeader },
+        style: [
+          set.hideTabs && layout.value.includes("horizontal")
+            ? "box-shadow: 0 1px 4px rgb(0 21 41 / 8%);"
+            : ""
+        ]
+      },
+      {
+        default: () => [
+          !hiddenSideBar.value && layout.value.includes("vertical")
+            ? h(navbar)
+            : h("div"),
+          !hiddenSideBar.value && layout.value.includes("horizontal")
+            ? h(Horizontal)
+            : h("div"),
+          h(
+            "h1",
+            {},
+            {
+              default: () => [
+                h(
+                  "span",
+                  { onClick: onFullScreen },
+                  {
+                    default: () => [
+                      !hiddenSideBar.value ? h(fullScreen) : h(exitScreen)
+                    ]
+                  }
+                )
+              ]
+            }
+          )
+        ]
+      }
+    );
+  }
 });
 </script>
 <style lang="scss" scoped>

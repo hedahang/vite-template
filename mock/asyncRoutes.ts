@@ -8,7 +8,7 @@ const permissionRouter = {
   redirect: "/permission/page",
   component: "Layout",
   meta: {
-    title: "message.permission",
+    title: "权限管理",
     icon: "Lollipop",
     showLink: true,
     rank: 3
@@ -17,18 +17,18 @@ const permissionRouter = {
     {
       path: "/permission/page",
       name: "permissionPage",
-      component: "permission/page",
+      component: "/permission/page",
       meta: {
-        title: "message.permissionPage",
+        title: "页面权限",
         showLink: true
       }
     },
     {
       path: "/permission/button",
       name: "permissionButton",
-      component: "permission/button",
+      component: "/permission/button",
       meta: {
-        title: "message.permissionButton",
+        title: "按钮权限",
         showLink: true,
         authority: []
       }
@@ -54,14 +54,31 @@ export default [
             setDifAuthority("v-admin", permissionRouter),
             {
               path: "/test",
-              component: "test",
+              component: "Layout",
               name: "test",
+              redirect: "/test/index",
               meta: {
-                title: "测试",
+                title: "",
                 icon: "Lollipop",
                 showLink: true,
                 rank: 2
-              }
+              },
+              children: [
+                {
+                  path: "/test/index",
+                  name: "testIndex",
+                  component: "/test",
+                  meta: {
+                    title: "测试主页",
+                    showLink: true,
+                    keepAlive: true,
+                    extraIcon: {
+                      svg: true,
+                      name: "team-iconxinpin"
+                    }
+                  }
+                }
+              ]
             }
           ]
         };

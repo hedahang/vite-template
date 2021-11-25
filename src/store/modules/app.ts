@@ -28,6 +28,23 @@ export const useAppStore = defineStore({
     getSidebarStatus() {
       return this.sidebar.opened;
     }
+  },
+  actions: {
+    TOGGLE_SIDEBAR() {
+      this.sidebar.opened = !this.sidebar.opened;
+      this.sidebar.withoutAnimation = false;
+      if (this.sidebar.opened) {
+        storageLocal.setItem("sidebarStatus", 1);
+      } else {
+        storageLocal.setItem("sidebarStatus", 0);
+      }
+    },
+    async toggleSideBar() {
+      await this.TOGGLE_SIDEBAR();
+    },
+    setLayout(layout) {
+      this.layout = layout;
+    }
   }
 });
 export function useAppStoreHook() {

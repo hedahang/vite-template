@@ -4,6 +4,8 @@ interface ImportMetaEnv extends ViteEnv {
   __: unknown;
 }
 
+type TimeoutHandle = ReturnType<typeof setTimeout>;
+type IntervalHandle = ReturnType<typeof setInterval>;
 declare interface ViteEnv {
   VITE_PORT: number;
   VITE_TITLE: string;

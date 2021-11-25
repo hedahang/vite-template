@@ -1,25 +1,54 @@
-<script setup lang="ts">
-import { ref } from "vue";
-import { storageSession } from "/@/utils/storage";
-
-const auth = ref<boolean>(storageSession.getItem("info").username || "admin");
-
-function changRole(value) {
-  storageSession.setItem("info", {
-    username: value,
-    accessToken: `eyJhbGciOiJIUzUxMiJ9.${value}`
-  });
-  window.location.reload();
-}
-</script>
-
 <template>
   <div>
-    <el-radio-group v-model="auth" @change="changRole">
-      <el-radio-button label="admin"></el-radio-button>
-      <el-radio-button label="test"></el-radio-button>
-    </el-radio-group>
-    <p v-auth="'v-admin'">只有admin可看</p>
-    <p v-auth="'v-test'">只有test可看</p>
+    <el-config-provider :locale="locale2">
+      <el-color-picker :model-value="''" style="vertical-align: middle" />
+    </el-config-provider>
+    <el-color-picker :model-value="''" style="vertical-align: middle" />
+    <el-button style="margin-left: 8px; vertical-align: middle" @click="toggle">
+      Switch Lang
+    </el-button>
   </div>
 </template>
+
+<script lang="ts">
+// import { ConfigProvider } from 'element-plus'
+import { defineComponent, ref } from "vue";
+import { ElConfigProvider } from "element-plus";
+
+export default defineComponent({
+  components: {
+    [ElConfigProvider.name]: ElConfigProvider
+  },
+  setup() {
+    const locale1 = ref({
+      name: "zh-cn",
+      el: {
+        colorpicker: {
+          confirm: "确定",
+          clear: "清空"
+        }
+      }
+    });
+    const locale2 = ref({
+      name: "en",
+      el: {
+        colorpicker: {
+          confirm: "Confirm",
+          clear: "Clear"
+        }
+      }
+    });
+    const toggle = () => {
+      const temp = locale1.value;
+      locale1.value = locale2.value;
+      locale2.value = temp;
+    };
+
+    return {
+      locale1,
+      locale2,
+      toggle
+    };
+  }
+});
+</script>

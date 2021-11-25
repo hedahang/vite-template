@@ -10,27 +10,99 @@
       :class="{ 'submenu-title-noDropdown': !props.isNest }"
       style="display: flex; align-items: center"
     >
-      <el-icon><setting /></el-icon>
-      <template #title>{{ onlyOneChild.meta.title }}</template>
+      <el-icon v-show="props.item.meta.icon">
+        <component
+          :is="
+            onlyOneChild.meta.icon || (props.item.meta && props.item.meta.icon)
+          "
+        ></component>
+      </el-icon>
+      <template #title>
+        <div
+          :style="{
+            width: appStore.sidebar.opened ? '' : '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            overflow: 'hidden'
+          }"
+        >
+          <span v-if="!menuMode">{{ onlyOneChild.meta.title }}</span>
+          <el-tooltip
+            v-else
+            placement="top"
+            :offset="-10"
+            :disabled="!onlyOneChild.showTooltip"
+          >
+            <template #content> {{ onlyOneChild.meta.title }} </template>
+            <span
+              ref="menuTextRef"
+              :style="{
+                width: appStore.sidebar.opened ? '125px' : '',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }"
+              @mouseover="hoverMenu(onlyOneChild)"
+            >
+              {{ onlyOneChild.meta.title }}
+            </span>
+          </el-tooltip>
+          <Icon
+            v-if="onlyOneChild.meta.extraIcon"
+            :svg="onlyOneChild.meta.extraIcon.svg ? true : false"
+            :content="`${onlyOneChild.meta.extraIcon.name}`"
+          />
+        </div>
+      </template>
     </el-menu-item>
   </template>
-  <el-sub-menu v-else index="1">
+  <el-sub-menu
+    v-else
+    ref="subMenu"
+    :index="resolvePath(props.item.path)"
+    popper-append-to-body
+  >
     <template #title>
-      <el-icon><location /></el-icon>
-      <span>Navigator One</span>
+      <el-icon v-show="props.item.meta.icon" :class="props.item.meta.icon">
+        <component :is="props.item.meta && props.item.meta.icon"></component>
+      </el-icon>
+      <span v-if="!menuMode">{{ props.item.meta.title }}</span>
+      <el-tooltip
+        v-else
+        placement="top"
+        :offset="-10"
+        :disabled="!appStore.sidebar.opened || !props.item.showTooltip"
+      >
+        <template #content> {{ props.item.meta.title }} </template>
+        <div
+          ref="menuTextRef"
+          :style="{
+            width: appStore.sidebar.opened ? '125px' : '',
+            display: 'inline-block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }"
+          @mouseover="hoverMenu(props.item)"
+        >
+          <span style="overflow: hidden; text-overflow: ellipsis">
+            {{ props.item.meta.title }}
+          </span>
+        </div>
+      </el-tooltip>
+      <Icon
+        v-if="props.item.meta.extraIcon"
+        :svg="props.item.meta.extraIcon.svg ? true : false"
+        :content="`${props.item.meta.extraIcon.name}`"
+      />
     </template>
-    <el-menu-item-group>
-      <template #title><span>Group One</span></template>
-      <el-menu-item index="1-1">item one</el-menu-item>
-      <el-menu-item index="1-2">item two</el-menu-item>
-    </el-menu-item-group>
-    <el-menu-item-group title="Group Two">
-      <el-menu-item index="1-3">item three</el-menu-item>
-    </el-menu-item-group>
-    <el-sub-menu index="1-4">
-      <template #title><span>item four</span></template>
-      <el-menu-item index="1-4-1">item one</el-menu-item>
-    </el-sub-menu>
+    <sidebar-item
+      v-for="child in props.item.children"
+      :key="child.path"
+      :is-nest="true"
+      :item="child"
+      :base-path="resolvePath(child.path)"
+      class="nest-menu"
+    />
   </el-sub-menu>
 </template>
 <script setup lang="ts">
@@ -39,6 +111,10 @@ import { PropType, ref, nextTick, getCurrentInstance } from "vue";
 import { childrenType } from "../../types";
 import { useAppStoreHook } from "/@/store/modules/app";
 import Icon from "/@/components/ReIcon/src/Icon.vue";
+
+const instance = getCurrentInstance().appContext.app.config.globalProperties;
+const menuMode = instance.$storage.layout?.layout === "vertical";
+const appStore = useAppStoreHook();
 
 const props = defineProps({
   item: {
@@ -55,12 +131,33 @@ const props = defineProps({
 });
 
 const onlyOneChild: childrenType = ref(null);
+// 存放菜单是否存在showTooltip属性标识
+const hoverMenuMap = new WeakMap();
+// 存储菜单文本dom元素
+const menuTextRef = ref(null);
+
+function hoverMenu(key) {
+  // 如果当前菜单showTooltip属性已存在，退出计算
+  if (hoverMenuMap.get(key)) return;
+
+  nextTick(() => {
+    // 如果文本内容的整体宽度大于其可视宽度，则文本溢出
+    menuTextRef.value?.scrollWidth > menuTextRef.value?.clientWidth
+      ? Object.assign(key, {
+          showTooltip: true
+        })
+      : Object.assign(key, {
+          showTooltip: false
+        });
+
+    hoverMenuMap.set(key, true);
+  });
+}
 
 function hasOneShowingChild(
   children: childrenType[] = [],
   parent: childrenType
 ) {
-  console.log(111);
   const showingChildren = children.filter((item: any) => {
     onlyOneChild.value = item;
     return true;

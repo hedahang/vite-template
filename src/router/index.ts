@@ -88,15 +88,16 @@ export const handleAliveRoute = (
 export const addAsyncRoutes = (arrRoutes: Array<RouteComponent>) => {
   if (!arrRoutes || !arrRoutes.length) return;
   arrRoutes.forEach((v: any) => {
-    if (v.redirect) {
+    if (v.component === "Layout") {
       v.component = Layout;
     } else {
-      v.component = modulesRoutes[`/src/views${v.path}/index.vue`];
+      v.component = modulesRoutes[`/src/views${v.component}/index.vue`];
     }
     if (v.children) {
       addAsyncRoutes(v.children);
     }
   });
+  console.log(modulesRoutes);
   return arrRoutes;
 };
 
@@ -190,6 +191,8 @@ router.beforeEach((to, _from, next) => {
         next();
       }
     } else {
+      // 刷新
+      console.log("刷新");
       if (usePermissionStoreHook().wholeRoutes.length === 0) {
         initRouter(name.username).then((router: Router) => {
           router.push(to.path);
@@ -212,6 +215,7 @@ router.beforeEach((to, _from, next) => {
           );
         });
       }
+      next();
     }
   } else {
     if (to.path !== "/login") {
@@ -224,7 +228,6 @@ router.beforeEach((to, _from, next) => {
       next();
     }
   }
-  next();
 });
 
 router.afterEach(() => {

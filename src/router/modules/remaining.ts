@@ -6,7 +6,7 @@ const remainingRouter = [
     name: "login",
     component: () => import("/@/views/login.vue"),
     meta: {
-      title: "message.hslogin",
+      title: "登录",
       showLink: false,
       rank: 101
     }

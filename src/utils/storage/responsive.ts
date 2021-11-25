@@ -26,6 +26,14 @@ export const injectResponsiveStorage = (app: App, config: ServerConfigs) => {
         locale: config.Locale ?? "zh"
       }
     },
+    // layout模式以及主题
+    layout: {
+      type: Object,
+      default: Storage.getData(undefined, "layout") ?? {
+        layout: config.Layout ?? "vertical",
+        theme: config.Theme ?? "default"
+      }
+    },
     sets: {
       type: Object,
       default: Storage.getData(undefined, "sets") ?? {

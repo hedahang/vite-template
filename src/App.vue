@@ -1,12 +1,12 @@
 <template>
-  <el-config-provider :local="currentLocale">
+  <el-config-provider :locale="currentLocale">
     <router-view />
   </el-config-provider>
 </template>
 <script lang="ts">
 import { ElConfigProvider } from "element-plus";
 import zhCn from "element-plus/lib/locale/lang/zh-cn";
-import en from "element-plus/lib/locale/lang/en";
+// import en from "element-plus/lib/locale/lang/en";
 export default {
   name: "app",
   components: {
@@ -14,7 +14,8 @@ export default {
   },
   computed: {
     currentLocale() {
-      return this.$storage.locale?.locale === "zh" ? zhCn : en;
+      // return this.$storage.locale?.locale === "zh" ? zhCn : en;
+      return zhCn;
     }
   }
 };

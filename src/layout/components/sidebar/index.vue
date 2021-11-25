@@ -25,8 +25,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onBeforeMount } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { algorithm } from "/@/utils/algorithm";
 import { emitter } from "/@/utils/mitt";
 import { storageLocal } from "/@/utils/storage";
 import { useAppStoreHook } from "/@/store/modules/app";
@@ -37,6 +38,7 @@ import SidebarItem from "./sidebarItem.vue";
 
 const route = useRoute();
 const pureApp = useAppStoreHook();
+const router = useRouter().options.routes;
 const routeStore = usePermissionStoreHook();
 const showLogo = ref(storageLocal.getItem("logoVal") || "1");
 const isCollapse = computed(() => {
@@ -50,33 +52,35 @@ const activeMenu = computed((): string => {
   }
   return path;
 });
-const menuSelect = (indexPath: string, index, item, routeResult): void => {
-  console.log(index);
-  console.log(indexPath);
-  console.log(item);
-  console.log(routeResult);
+const menuSelect = (indexPath: string): void => {
   let parentPath = "";
   let parentPathIndex = indexPath.lastIndexOf("/");
   if (parentPathIndex > 0) {
     parentPath = indexPath.slice(0, parentPathIndex);
   }
-  console.log(parentPath);
   // 找到当前路由的信息
-  // function findCurrentRoute(routes) {
-  //   return routes.map(item => {
-  //     if (item.path === indexPath) {
-  //       // 切换左侧菜单 通知标签页
-  //       emitter.emit("changLayoutRoute", {
-  //         indexPath,
-  //         parentPath
-  //       });
-  //     } else {
-  //       if (item.children) findCurrentRoute(item.children);
-  //     }
-  //   });
-  // }
-  // findCurrentRoute(algorithm.increaseIndexes(router));
+  function findCurrentRoute(routes) {
+    return routes.map(item => {
+      if (item.path === indexPath) {
+        console.log("切换左侧菜单 通知标签页", indexPath, parentPath);
+        // 切换左侧菜单 通知标签页
+        emitter.emit("changLayoutRoute", {
+          indexPath,
+          parentPath
+        });
+      } else {
+        if (item.children) findCurrentRoute(item.children);
+      }
+    });
+  }
+  findCurrentRoute(algorithm.increaseIndexes(router));
 };
+
+onBeforeMount(() => {
+  emitter.on("logoChange", key => {
+    showLogo.value = key;
+  });
+});
 </script>
 
 <style scoped></style>

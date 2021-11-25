@@ -39,7 +39,10 @@ import {
   ElLoading,
   ElMessage,
   ElMessageBox,
-  ElNotification
+  ElNotification,
+  ElTimeSelect,
+  ElDatePicker,
+  ElColorPicker
 } from "element-plus";
 
 // https://element-plus.org/zh-CN/component/icon.html
@@ -59,7 +62,8 @@ import {
   Close,
   CloseBold,
   User,
-  Lock
+  Lock,
+  SwitchButton
 } from "@element-plus/icons";
 
 const components = [
@@ -98,6 +102,9 @@ const components = [
   ElDescriptionsItem,
   ElBacktop,
   ElSwitch,
+  ElTimeSelect,
+  ElDatePicker,
+  ElColorPicker,
 
   // icon
   Check,
@@ -115,7 +122,8 @@ const components = [
   Close,
   CloseBold,
   User,
-  Lock
+  Lock,
+  SwitchButton
 ];
 
 const plugins = [

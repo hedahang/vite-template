@@ -39,7 +39,6 @@ class EnclosureHttp {
       (config: EnclosureHttpRequestConfig) => {
         const $config = config;
         NProgress.start(); // 每次切换页面时，调用进度条
-        console.log($config);
         return $config;
       },
       error => {
