@@ -15,6 +15,17 @@ type Events = {
   changLayoutRoute: {
     indexPath: string;
     parentPath: string;
+    item?: {
+      path?: string;
+      parentPath?: string;
+      meta?: {
+        title?: string;
+        icon?: string;
+        showLink?: boolean;
+        savedPosition?: boolean;
+      };
+      name?: string;
+    };
   };
 };
 

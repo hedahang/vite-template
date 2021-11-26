@@ -103,7 +103,8 @@ const menuSelect = (indexPath: string): void => {
         // 切换左侧菜单 通知标签页
         emitter.emit("changLayoutRoute", {
           indexPath,
-          parentPath
+          parentPath,
+          item
         });
       } else {
         if (item.children) findCurrentRoute(item.children);

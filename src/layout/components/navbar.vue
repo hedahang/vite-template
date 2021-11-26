@@ -8,7 +8,7 @@
     <Breadcrumb class="breadcrumb-container" />
     <div class="vertical-header-right">
       <!-- 全屏 -->
-      <screenfull />
+      <Screenfull />
       <!-- 退出登陆 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link">
@@ -40,7 +40,7 @@ import { storageSession } from "/@/utils/storage";
 
 import Hamburger from "./sidebar/hamBurger.vue";
 import Breadcrumb from "./sidebar/breadCrumb.vue";
-import screenfull from "./screenfull/index.vue";
+import Screenfull from "./screenfull/index.vue";
 
 const appStore = useAppStoreHook();
 const router = useRouter();

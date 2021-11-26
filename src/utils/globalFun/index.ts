@@ -1,3 +1,5 @@
+export * from "./operate";
+
 export const openLink = (link: string) => {
   const $a: HTMLElement = document.createElement("a");
   $a.setAttribute("href", link);

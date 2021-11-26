@@ -47,6 +47,7 @@ import Vertical from "./components/sidebar/index.vue";
 import navbar from "./components/navbar.vue";
 import setting from "./components/setting/index.vue";
 import Horizontal from "./components/sidebar/horizontal.vue";
+import tag from "./components/tag/index.vue";
 
 const instance = getCurrentInstance().appContext.app.config.globalProperties;
 const hiddenSideBar = ref(instance.$config?.HiddenSideBar);
@@ -146,7 +147,7 @@ const layoutHeader = defineComponent({
             ? h(Horizontal)
             : h("div"),
           h(
-            "h1",
+            tag,
             {},
             {
               default: () => [
