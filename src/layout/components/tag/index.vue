@@ -94,7 +94,6 @@ import { storageLocal } from "/@/utils/storage";
 import { useRoute, useRouter } from "vue-router";
 import { usePermissionStoreHook } from "/@/store/modules/permission";
 import { toggleClass, removeClass } from "/@/utils/globalFun";
-import Icon from "/@/components/ReIcon/src/Icon.vue";
 
 import close from "/@/assets/images/svg/close.svg";
 import refresh from "/@/assets/images/svg/refresh.svg";

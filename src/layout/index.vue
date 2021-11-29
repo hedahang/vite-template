@@ -5,9 +5,7 @@
       <div v-if="set.fixedHeader">
         <layout-header />
         <!-- 主题内容 -->
-        <div class="app-main" style="padding-top: 85px">
-          <router-view></router-view>
-        </div>
+        <app-main :fixed-header="set.fixedHeader" />
       </div>
       <el-scrollbar v-else>
         <el-backtop
@@ -15,9 +13,9 @@
           target=".main-container .el-scrollbar__wrap"
           ><backTop />
         </el-backtop>
-        <div class="header">el-scrollbar</div>
+        <layout-header />
         <!-- 主题内容 -->
-        <router-view></router-view>
+        <app-main :fixed-header="set.fixedHeader" />
       </el-scrollbar>
     </div>
     <!-- 系统设置 -->
@@ -48,10 +46,11 @@ import navbar from "./components/navbar.vue";
 import setting from "./components/setting/index.vue";
 import Horizontal from "./components/sidebar/horizontal.vue";
 import tag from "./components/tag/index.vue";
+import appMain from "./components/appMain.vue";
 
 const instance = getCurrentInstance().appContext.app.config.globalProperties;
 const hiddenSideBar = ref(instance.$config?.HiddenSideBar);
-const pureSetting = useSettingStoreHook();
+const appSetting = useSettingStoreHook();
 
 // 清空缓存后从serverConfig.json读取默认配置并赋值到storage中
 
@@ -90,7 +89,7 @@ const set: setType = reactive({
   }),
 
   fixedHeader: computed(() => {
-    return pureSetting.fixedHeader;
+    return appSetting.fixedHeader;
   }),
 
   classes: computed(() => {
