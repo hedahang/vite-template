@@ -14,9 +14,7 @@
         @mouseenter.prevent="onMouseenter(item, index)"
         @mouseleave.prevent="onMouseleave(item, index)"
       >
-        <router-link :to="item.path" @click="tagOnClick(item)">{{
-          item.meta.title
-        }}</router-link>
+        <router-link :to="item.path">{{ item.meta.title }}</router-link>
         <el-icon
           v-if="index !== 0"
           class="el-icon-close"
@@ -47,12 +45,27 @@
           style="display: flex; align-items: center"
         >
           <li v-if="item.show" @click="selectTag(key, item)">
-            <component :is="item.icon" :key="key" />
+            <component :is="item.icon" :key="key + 'icon'" />
             {{ item.text }}
           </li>
         </div>
       </ul>
     </transition>
+    <!-- 右侧功能按钮 -->
+    <ul class="right-button">
+      <li>
+        <el-icon
+          title="刷新路由"
+          class="el-icon-refresh-right rotate"
+          @click="onFresh"
+        >
+          <RefreshRight />
+        </el-icon>
+      </li>
+      <li>
+        <slot></slot>
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -65,7 +78,8 @@ import {
   nextTick,
   computed,
   getCurrentInstance,
-  ComputedRef
+  ComputedRef,
+  shallowRef
 } from "vue";
 import {
   RouteConfigs,
@@ -79,15 +93,15 @@ import { handleAliveRoute, delAliveRoutes } from "/@/router";
 import { storageLocal } from "/@/utils/storage";
 import { useRoute, useRouter } from "vue-router";
 import { usePermissionStoreHook } from "/@/store/modules/permission";
-import { toggleClass, removeClass, hasClass } from "/@/utils/globalFun";
+import { toggleClass, removeClass } from "/@/utils/globalFun";
+import Icon from "/@/components/ReIcon/src/Icon.vue";
 
 import close from "/@/assets/images/svg/close.svg";
 import refresh from "/@/assets/images/svg/refresh.svg";
 import closeAll from "/@/assets/images/svg/close_all.svg";
-import closeLeft from "/@/assets/images/svg/close_left.svg";
 import closeOther from "/@/assets/images/svg/close_other.svg";
-import closeRight from "/@/assets/images/svg/close_right.svg";
 
+let refreshButton = "refresh-button";
 const instance = getCurrentInstance();
 
 // 响应式storage
@@ -109,12 +123,25 @@ if (!showModel.value) {
   storageLocal.setItem("showModel", "card");
 }
 
-const tagsViews = ref<Array<tagsViewsType>>([
+const tagsViews = shallowRef<Array<tagsViewsType>>([
   {
     icon: refresh,
     text: "刷新页面",
-    divided: false,
-    disabled: false,
+    show: true
+  },
+  {
+    icon: close,
+    text: "关闭当前",
+    show: true
+  },
+  {
+    icon: closeOther,
+    text: "关闭其他",
+    show: true
+  },
+  {
+    icon: closeAll,
+    text: "关闭所有",
     show: true
   }
 ]);
@@ -126,21 +153,113 @@ let buttonTop = ref(0);
 // 当前右键选中的路由信息
 let currentSelect = ref({});
 
-// 触发tags标签切换
-function tagOnClick(item) {
-  // showMenuModel(item.path);
-  console.log(item);
+// 重新加载
+function onFresh() {
+  toggleClass(true, refreshButton, document.querySelector(".rotate"));
+  const { fullPath } = unref(route);
+  router.replace({
+    path: "/redirect" + fullPath
+  });
+  setTimeout(() => {
+    removeClass(document.querySelector(".rotate"), refreshButton);
+  }, 600);
 }
-function onClickDrop(key, item, selectRoute?: RouteConfigs) {}
+
+function onClickDrop(key, item, selectRoute?: RouteConfigs) {
+  // 当前路由信息
+  switch (key) {
+    case 0:
+      // 重新加载
+      onFresh();
+      break;
+    case 1:
+      // 关闭当前页
+      selectRoute
+        ? deleteMenu({
+            path: selectRoute.path,
+            meta: selectRoute.meta,
+            name: selectRoute.name
+          })
+        : deleteMenu({ path: route.path, meta: route.meta });
+      break;
+    case 2:
+      // 关闭其他标签
+      selectRoute
+        ? deleteMenu(
+            {
+              path: selectRoute.path,
+              meta: selectRoute.meta
+            },
+            "other"
+          )
+        : deleteMenu({ path: route.path, meta: route.meta }, "other");
+      break;
+    case 3:
+      // 关闭全部标签页
+      routerArrays.splice(1, routerArrays.length);
+      relativeStorage.routesInStorage = routerArrays;
+      usePermissionStoreHook().clearAllCachePage();
+      router.push("/home");
+      break;
+  }
+}
 // 触发右键中菜单的点击事件
 function selectTag(key, item) {
   onClickDrop(key, item, currentSelect.value);
 }
 
+function deleteDynamicTag(obj: any, current: any, tag?: string) {
+  // 存放被删除的缓存路由
+  let delAliveRouteList = [];
+  let valueIndex: number = routerArrays.findIndex((item: any) => {
+    return item.path === obj.path;
+  });
+
+  const spliceRoute = (start?: number, end?: number, other?: boolean): void => {
+    if (other) {
+      let arrs = [...routerArray];
+      if (obj.path !== "/home") arrs.push(obj);
+      relativeStorage.routesInStorage = [...arrs];
+      routerArrays = relativeStorage.routesInStorage;
+    } else {
+      delAliveRouteList = routerArrays.splice(start, end);
+      relativeStorage.routesInStorage = routerArrays;
+    }
+  };
+  if (tag === "other") {
+    spliceRoute(1, 1, true);
+  } else {
+    // 从当前匹配到的路径中删除
+    spliceRoute(valueIndex, 1);
+  }
+  let newRoute: any = routerArrays.slice(-1);
+  if (current === route.path) {
+    // 删除缓存路由
+    tag
+      ? delAliveRoutes(delAliveRouteList)
+      : handleAliveRoute(route.matched, "delete");
+    // 如果删除当前激活tag就自动切换到最后一个tag
+    nextTick(() => {
+      router.push({
+        path: newRoute[0].path
+      });
+    });
+  } else {
+    // 删除缓存路由
+    tag ? delAliveRoutes(delAliveRouteList) : delAliveRoutes([obj]);
+    if (!routerArrays.length) return;
+    let isHasActiveTag = routerArrays.some(item => {
+      return item.path === route.path;
+    });
+    !isHasActiveTag &&
+      router.push({
+        path: newRoute[0].path
+      });
+  }
+}
 // 删除标签
 function deleteMenu(item, tag?: string) {
-  console.log("delete", item, tag);
-  // deleteDynamicTag(item, item.path, tag);
+  deleteDynamicTag(item, item.path, tag);
 }
 
 // 关闭右键菜单
@@ -149,29 +268,9 @@ function closeMenu() {
 }
 // 打开右键菜单
 function openMenu(tag, e) {
-  console.log("openMenu", tag);
-  console.log("e", e);
   closeMenu();
-  if (tag.path === "/home") {
-    // 右键菜单为首页，只显示刷新
-    // showMenus(false);
-    tagsViews.value[0].show = true;
-  } else if (route.path !== tag.path) {
-    // 右键菜单不匹配当前路由，隐藏刷新
-    tagsViews.value[0].show = false;
-    // showMenuModel(tag.path);
-  } else if (
-    // eslint-disable-next-line no-dupe-else-if
-    relativeStorage.routesInStorage.length === 2 &&
-    route.path !== tag.path
-  ) {
-    // showMenus(true);
-    // 只有两个标签时不显示关闭其他标签页
-    tagsViews.value[4].show = false;
-  } else if (route.path === tag.path) {
-    // 右键当前激活的菜单
-    // showMenuModel(tag.path, true);
-  }
+  // 右键菜单为首页，隐藏关闭当前页
+  tagsViews.value[1].show = tag.path === "/home" ? false : true;
 
   currentSelect.value = tag;
   const menuMinWidth = 105;
@@ -216,14 +315,20 @@ function onMouseleave(item, index) {
     }
   }
 }
-
+watch(
+  () => visible.value,
+  val => {
+    if (val) {
+      document.body.addEventListener("click", closeMenu);
+    } else {
+      document.body.removeEventListener("click", closeMenu);
+    }
+  }
+);
 onBeforeMount(() => {
   if (!instance) return;
   relativeStorage = instance.appContext.app.config.globalProperties.$storage;
   routerArrays = relativeStorage.routesInStorage ?? routerArray;
-  console.log("****", relativeStorage);
-  console.log("****", routerArray);
-  console.log("****", routerArrays);
 
   // 触发隐藏标签页
   emitter.on("tagViewsChange", key => {
@@ -416,6 +521,23 @@ onBeforeMount(() => {
     }
   }
 }
+
+.right-button {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  font-size: 16px;
+
+  li {
+    width: 40px;
+    height: 38px;
+    line-height: 38px;
+    text-align: center;
+    border-right: 1px solid #ccc;
+    cursor: pointer;
+  }
+}
+
 .is-active {
   background-color: #eaf4fe;
   position: relative;

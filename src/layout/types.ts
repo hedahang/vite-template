@@ -29,8 +29,6 @@ export type relativeStorageType = {
 export type tagsViewsType = {
   icon: string;
   text: string;
-  divided: boolean;
-  disabled: boolean;
   show: boolean;
 };
 

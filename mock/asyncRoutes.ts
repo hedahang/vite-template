@@ -59,7 +59,7 @@ export default [
               redirect: "/test/index",
               meta: {
                 title: "",
-                icon: "Lollipop",
+                icon: "SetUp",
                 showLink: true,
                 rank: 2
               },

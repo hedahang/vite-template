@@ -1,4 +1,4 @@
-// import Layout from "/@/layout/index.vue";
+import Layout from "/@/layout/index.vue";
 
 const remainingRouter = [
   {
@@ -10,25 +10,25 @@ const remainingRouter = [
       showLink: false,
       rank: 101
     }
+  },
+  {
+    path: "/redirect",
+    name: "redirect",
+    component: Layout,
+    meta: {
+      icon: "HomeFilled",
+      title: "首页",
+      showLink: false,
+      rank: 104
+    },
+    children: [
+      {
+        path: "/redirect/:path(.*)",
+        name: "redirect",
+        component: () => import("/@/views/redirect.vue")
+      }
+    ]
   }
-  // {
-  //   path: "/redirect",
-  //   name: "redirect",
-  //   component: Layout,
-  //   meta: {
-  //     icon: "HomeFilled",
-  //     title: "首页",
-  //     showLink: false,
-  //     rank: 104
-  //   },
-  //   children: [
-  //     {
-  //       path: "/redirect/:path(.*)",
-  //       name: "redirect",
-  //       component: () => import("/@/views/redirect.vue")
-  //     }
-  //   ]
-  // }
 ];
 
 export default remainingRouter;
